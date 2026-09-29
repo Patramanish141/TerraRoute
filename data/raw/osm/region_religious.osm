@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API 0.7.62.11 87bfad18">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2026-09-25T17:13:20Z"/>
+
+  <bounds minlat="22.1800000" minlon="84.7800000" maxlat="22.2600000" maxlon="84.9000000"/>
+
+  <node id="4794826089" lat="22.2331599" lon="84.7826735">
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="name" v="Gurudwara , Vedvyas"/>
+    <tag k="religion" v="sikh"/>
+  </node>
+  <node id="4794826090" lat="22.2330308" lon="84.7824536">
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="name" v="Shiv Mandir , Vedvyas"/>
+    <tag k="religion" v="hindu"/>
+  </node>
+  <way id="226259876">
+    <nd ref="2351167487"/>
+    <nd ref="2351167553"/>
+    <nd ref="2351167551"/>
+    <nd ref="2351167455"/>
+    <nd ref="2351167384"/>
+    <nd ref="2351167253"/>
+    <nd ref="2351167454"/>
+    <nd ref="2351167469"/>
+    <nd ref="2351167420"/>
+    <nd ref="2351167329"/>
+    <nd ref="2351167215"/>
+    <nd ref="2351167206"/>
+    <nd ref="2351167226"/>
+    <nd ref="2351167470"/>
+    <nd ref="2351167487"/>
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="name" v="Maa Vaishno Devi Temple"/>
+    <tag k="religion" v="hindu"/>
+  </way>
+  <way id="486825869">
+    <nd ref="4793772047"/>
+    <nd ref="4793772048"/>
+    <nd ref="4793772049"/>
+    <nd ref="4793772050"/>
+    <nd ref="4793772047"/>
+    <tag k="addr:city" v="Rourkela"/>
+    <tag k="addr:housenumber" v="Sector 3"/>
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="name" v="Jaganath Temple"/>
+  </way>
+  <way id="486942655">
+    <nd ref="4794816656"/>
+    <nd ref="4794816657"/>
+    <nd ref="4794816658"/>
+    <nd ref="4794816659"/>
+    <nd ref="4794816660"/>
+    <nd ref="4794816661"/>
+    <nd ref="4794816662"/>
+    <nd ref="4794816656"/>
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Vedvyas Temple"/>
+    <tag k="religion" v="hindu"/>
+  </way>
+  <way id="486946049">
+    <nd ref="4794841875"/>
+    <nd ref="4794841876"/>
+    <nd ref="4794841877"/>
+    <nd ref="4794841878"/>
+    <nd ref="4794841879"/>
+    <nd ref="4794841880"/>
+    <nd ref="4794841881"/>
+    <nd ref="4794841882"/>
+    <nd ref="4794841875"/>
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="building" v="yes"/>
+    <tag k="description" v="A very Famous Sai Temple in Vedvyas,Rourkela"/>
+    <tag k="image" v="https://snsscavenger.files.wordpress.com/2011/12/57813813.jpg"/>
+    <tag k="name" v="Sai Mandir ,Vedvyas"/>
+    <tag k="religion" v="hindu"/>
+  </way>
+  <way id="574661137">
+    <nd ref="5515575794"/>
+    <nd ref="5515575793"/>
+    <nd ref="5515575795"/>
+    <nd ref="5515575796"/>
+    <nd ref="5515575797"/>
+    <nd ref="5515575803"/>
+    <nd ref="5515575799"/>
+    <nd ref="5515575798"/>
+    <nd ref="5515575794"/>
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Shiva Temple"/>
+    <tag k="religion" v="hindu"/>
+  </way>
+  <way id="574663551">
+    <nd ref="5515590482"/>
+    <nd ref="5515590483"/>
+    <nd ref="5515590484"/>
+    <nd ref="5515590485"/>
+    <nd ref="5515590482"/>
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="building" v="yes"/>
+    <tag k="name" v="Maa Bhagwati Temple"/>
+    <tag k="religion" v="hindu"/>
+  </way>
+  <way id="574667003">
+    <nd ref="5515605072"/>
+    <nd ref="5515605073"/>
+    <nd ref="5515605074"/>
+    <nd ref="5515605075"/>
+    <nd ref="5515605076"/>
+    <nd ref="5515605077"/>
+    <nd ref="1635542290"/>
+    <nd ref="5515605078"/>
+    <nd ref="5515605079"/>
+    <nd ref="5515605080"/>
+    <nd ref="5515605072"/>
+    <tag k="amenity" v="place_of_worship"/>
+    <tag k="name" v="Hanuman Vatika Complex"/>
+    <tag k="religion" v="hindu"/>
+    <tag k="wikidata" v="Q5651371"/>
+  </way>
+  <way id="975820001">
+    <nd ref="9029879904"/>
+    <nd ref="9029879903"/>
+    <nd ref="9029879902"/>
+    <nd ref="9029879901"/>
+    <nd ref="9029879904"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <way id="975820002">
+    <nd ref="9029879908"/>
+    <nd ref="9029879907"/>
+    <nd ref="9029879906"/>
+    <nd ref="9029879905"/>
+    <nd ref="9029879908"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <way id="975820003">
+    <nd ref="9029879912"/>
+    <nd ref="9029879911"/>
+    <nd ref="9029879910"/>
+    <nd ref="9029879909"/>
+    <nd ref="9029879912"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <way id="975820004">
+    <nd ref="9029879916"/>
+    <nd ref="9029879915"/>
+    <nd ref="9029879914"/>
+    <nd ref="9029879913"/>
+    <nd ref="9029879916"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <way id="975820005">
+    <nd ref="9029928020"/>
+    <nd ref="9029928019"/>
+    <nd ref="9029928018"/>
+    <nd ref="9029928017"/>
+    <nd ref="9029928020"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <way id="975820006">
+    <nd ref="9029928024"/>
+    <nd ref="9029928023"/>
+    <nd ref="9029928022"/>
+    <nd ref="9029928021"/>
+    <nd ref="9029928024"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <way id="975820007">
+    <nd ref="9029928028"/>
+    <nd ref="9029928027"/>
+    <nd ref="9029928026"/>
+    <nd ref="9029928025"/>
+    <nd ref="9029928028"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <way id="975820008">
+    <nd ref="9029928046"/>
+    <nd ref="9029928045"/>
+    <nd ref="9029928044"/>
+    <nd ref="9029928043"/>
+    <nd ref="9029928042"/>
+    <nd ref="9029928041"/>
+    <nd ref="9029928040"/>
+    <nd ref="9029928039"/>
+    <nd ref="9029928038"/>
+    <nd ref="9029928037"/>
+    <nd ref="9029928036"/>
+    <nd ref="9029928035"/>
+    <nd ref="9029928034"/>
+    <nd ref="9029928033"/>
+    <nd ref="9029928032"/>
+    <nd ref="9029928031"/>
+    <nd ref="9029928030"/>
+    <nd ref="9029928029"/>
+    <nd ref="9029928046"/>
+    <tag k="building" v="temple"/>
+    <tag k="source" v="MaxarPremium"/>
+  </way>
+  <node id="4794841875" lat="22.2279360" lon="84.7855032"/>
+  <node id="4794841876" lat="22.2279112" lon="84.7858251"/>
+  <node id="4794841877" lat="22.2280527" lon="84.7858331"/>
+  <node id="4794841878" lat="22.2280552" lon="84.7859968"/>
+  <node id="4794841879" lat="22.2281446" lon="84.7859941"/>
+  <node id="4794841880" lat="22.2281346" lon="84.7861845"/>
+  <node id="4794841881" lat="22.2283109" lon="84.7861899"/>
+  <node id="4794841882" lat="22.2283407" lon="84.7855140"/>
+  <node id="4794816662" lat="22.2368258" lon="84.7969675"/>
+  <node id="4794816656" lat="22.2368121" lon="84.7971204"/>
+  <node id="4794816657" lat="22.2368593" lon="84.7971465"/>
+  <node id="4794816658" lat="22.2368282" lon="84.7972162"/>
+  <node id="4794816659" lat="22.2367320" lon="84.7972585"/>
+  <node id="4794816660" lat="22.2366377" lon="84.7971572"/>
+  <node id="4794816661" lat="22.2366253" lon="84.7970338"/>
+  <node id="1635542290" lat="22.2215366" lon="84.8284755"/>
+  <node id="5515605072" lat="22.2225465" lon="84.8275327"/>
+  <node id="5515605073" lat="22.2225085" lon="84.8292871"/>
+  <node id="5515605078" lat="22.2215687" lon="84.8277241"/>
+  <node id="5515605079" lat="22.2216011" lon="84.8277218"/>
+  <node id="5515605080" lat="22.2216327" lon="84.8274905"/>
+  <node id="9029928029" lat="22.2225193" lon="84.8279555"/>
+  <node id="9029928030" lat="22.2224334" lon="84.8279539"/>
+  <node id="9029928031" lat="22.2224328" lon="84.8279924"/>
+  <node id="9029928032" lat="22.2224103" lon="84.8279920"/>
+  <node id="9029928033" lat="22.2224049" lon="84.8283138"/>
+  <node id="9029928034" lat="22.2225002" lon="84.8283157"/>
+  <node id="9029928035" lat="22.2224988" lon="84.8284032"/>
+  <node id="9029928036" lat="22.2223672" lon="84.8284007"/>
+  <node id="9029928037" lat="22.2223661" lon="84.8284699"/>
+  <node id="9029928038" lat="22.2222029" lon="84.8284667"/>
+  <node id="9029928039" lat="22.2222113" lon="84.8279658"/>
+  <node id="9029928040" lat="22.2221213" lon="84.8279640"/>
+  <node id="9029928041" lat="22.2221277" lon="84.8275779"/>
+  <node id="9029928042" lat="22.2221887" lon="84.8275791"/>
+  <node id="9029928043" lat="22.2221894" lon="84.8275353"/>
+  <node id="9029928044" lat="22.2224297" lon="84.8275400"/>
+  <node id="9029928045" lat="22.2224290" lon="84.8275843"/>
+  <node id="9029928046" lat="22.2225255" lon="84.8275862"/>
+  <node id="5515575793" lat="22.2376433" lon="84.8215162"/>
+  <node id="5515575794" lat="22.2378270" lon="84.8215296"/>
+  <node id="5515575795" lat="22.2376624" lon="84.8212075"/>
+  <node id="5515575796" lat="22.2373859" lon="84.8211930"/>
+  <node id="5515575797" lat="22.2373502" lon="84.8219573"/>
+  <node id="5515575798" lat="22.2377829" lon="84.8219614"/>
+  <node id="5515575799" lat="22.2377510" lon="84.8219611"/>
+  <node id="5515575803" lat="22.2374443" lon="84.8219582"/>
+  <node id="5515605074" lat="22.2224172" lon="84.8301806"/>
+  <node id="5515605075" lat="22.2222461" lon="84.8315054"/>
+  <node id="5515605076" lat="22.2222176" lon="84.8323373"/>
+  <node id="5515605077" lat="22.2213733" lon="84.8322942"/>
+  <node id="9029879901" lat="22.2219963" lon="84.8317713"/>
+  <node id="9029879902" lat="22.2219317" lon="84.8317621"/>
+  <node id="9029879903" lat="22.2219473" lon="84.8316341"/>
+  <node id="9029879904" lat="22.2220120" lon="84.8316434"/>
+  <node id="9029879905" lat="22.2218642" lon="84.8305183"/>
+  <node id="9029879906" lat="22.2217510" lon="84.8305084"/>
+  <node id="9029879907" lat="22.2217579" lon="84.8304162"/>
+  <node id="9029879908" lat="22.2218712" lon="84.8304261"/>
+  <node id="9029879909" lat="22.2217858" lon="84.8308842"/>
+  <node id="9029879910" lat="22.2216927" lon="84.8308818"/>
+  <node id="9029879911" lat="22.2216960" lon="84.8307309"/>
+  <node id="9029879912" lat="22.2217892" lon="84.8307334"/>
+  <node id="9029879913" lat="22.2223592" lon="84.8301536"/>
+  <node id="9029879914" lat="22.2222324" lon="84.8301518"/>
+  <node id="9029879915" lat="22.2222350" lon="84.8299420"/>
+  <node id="9029879916" lat="22.2223618" lon="84.8299439"/>
+  <node id="9029928017" lat="22.2222007" lon="84.8305521"/>
+  <node id="9029928018" lat="22.2219650" lon="84.8305349"/>
+  <node id="9029928019" lat="22.2219733" lon="84.8304025"/>
+  <node id="9029928020" lat="22.2222089" lon="84.8304197"/>
+  <node id="9029928021" lat="22.2221041" lon="84.8312049"/>
+  <node id="9029928022" lat="22.2220147" lon="84.8312089"/>
+  <node id="9029928023" lat="22.2220159" lon="84.8310184"/>
+  <node id="9029928024" lat="22.2221252" lon="84.8310211"/>
+  <node id="9029928025" lat="22.2221853" lon="84.8308491"/>
+  <node id="9029928026" lat="22.2220165" lon="84.8308446"/>
+  <node id="9029928027" lat="22.2220192" lon="84.8307285"/>
+  <node id="9029928028" lat="22.2221879" lon="84.8307330"/>
+  <node id="2351167206" lat="22.2352928" lon="84.8651822"/>
+  <node id="2351167215" lat="22.2353083" lon="84.8653908"/>
+  <node id="2351167226" lat="22.2353548" lon="84.8651959"/>
+  <node id="2351167253" lat="22.2353577" lon="84.8656032"/>
+  <node id="2351167329" lat="22.2353619" lon="84.8654007"/>
+  <node id="2351167384" lat="22.2353759" lon="84.8656406"/>
+  <node id="2351167420" lat="22.2353873" lon="84.8654479"/>
+  <node id="2351167454" lat="22.2353929" lon="84.8655392"/>
+  <node id="2351167455" lat="22.2353985" lon="84.8656687"/>
+  <node id="2351167469" lat="22.2354027" lon="84.8654853"/>
+  <node id="2351167470" lat="22.2354845" lon="84.8652705"/>
+  <node id="2351167487" lat="22.2355324" lon="84.8653680"/>
+  <node id="2351167551" lat="22.2355394" lon="84.8656893"/>
+  <node id="2351167553" lat="22.2355423" lon="84.8655255"/>
+  <node id="5515590482" lat="22.2473431" lon="84.8255842"/>
+  <node id="5515590483" lat="22.2470008" lon="84.8256520"/>
+  <node id="5515590484" lat="22.2471149" lon="84.8263329"/>
+  <node id="5515590485" lat="22.2474486" lon="84.8262713"/>
+  <node id="4793772047" lat="22.2483876" lon="84.8777743"/>
+  <node id="4793772048" lat="22.2477069" lon="84.8776873"/>
+  <node id="4793772049" lat="22.2476703" lon="84.8782804"/>
+  <node id="4793772050" lat="22.2483437" lon="84.8782725"/>
+
+</osm>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TerraRoute — Terrain-Aware Route Optimizer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  :root {
+    --ink: #1f2937; --muted: #6b7280; --line: #e5e7eb; --bg-soft: #f8fafc;
+    --ok: #15803d; --ok-bg: #dcfce7; --bad: #b91c1c; --bad-bg: #fee2e2; --warn: #b45309; --warn-bg: #fef3c7;
+    --accent: #2563eb;
+  }
+  html, body { margin: 0; height: 100%; font-family: -apple-system, Segoe UI, Roboto, sans-serif; color: var(--ink); }
+  #map { height: 100vh; width: 100%; }
+  #panel {
+    position: absolute; top: 12px; left: 56px; z-index: 1000;
+    background: white; padding: 14px 16px; border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25); width: 260px;
+  }
+  #panel h2 { margin: 0 0 8px; font-size: 16px; }
+  #panel p { margin: 4px 0; font-size: 13px; color: #333; }
+  #panel button { margin-top: 8px; width: 100%; padding: 8px; border: none; border-radius: 5px; background: var(--accent); color: white; font-size: 13px; cursor: pointer; }
+  #panel button:hover { background: #1e4fc7; }
+  #panel label { display: flex; gap: 6px; align-items: center; font-size: 12px; color: #374151; margin-top: 6px; cursor: pointer; }
+  #status { margin-top: 8px; font-size: 12px; color: #555; min-height: 16px; }
+  .marker-label { font-size: 11px; font-weight: 600; }
+
+  /* ---------- Results panel ---------- */
+  #results {
+    position: absolute; top: 12px; right: 12px; bottom: 12px; z-index: 1000; width: 700px; max-width: calc(100vw - 24px);
+    background: white; border-radius: 8px; box-shadow: 0 2px 14px rgba(0,0,0,0.28);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  #results[hidden] { display: none; }
+  .res-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 6px; border-bottom: 1px solid var(--line); }
+  .res-head h3 { margin: 0; font-size: 15px; }
+  .res-head .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .icon-btn { border: none; background: none; font-size: 20px; cursor: pointer; color: var(--muted); padding: 0 4px; }
+  .res-body { overflow: auto; padding: 10px 16px 16px; }
+
+  table.cmp { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  table.cmp th { text-align: left; font-weight: 600; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .02em; padding: 6px 5px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.cmp td { padding: 7px 5px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+  table.cmp td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  table.cmp th:last-child, table.cmp td:last-child { padding-left: 14px; }
+  table.cmp th.num { text-align: right; }
+  table.cmp tr.route-row { cursor: pointer; }
+  table.cmp tr.route-row:hover td { background: var(--bg-soft); }
+  table.cmp tr.route-row.selected td { background: #eff6ff; }
+  table.cmp tr.route-row.rejected td { color: #6b7280; }
+  .small { font-size: 11px; color: var(--muted); }
+  .rname { display: flex; align-items: center; gap: 6px; font-weight: 600; white-space: nowrap; }
+  .swatch { width: 22px; height: 0; border-top: 4px solid; display: inline-block; border-radius: 2px; }
+  .swatch.dashed { border-top-style: dashed; border-top-width: 3px; }
+  .swatch.dotted { border-top-style: dotted; border-top-width: 3px; }
+  .badge { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
+  .badge.top { background: #1d4ed8; color: white; }
+  .badge.rej { background: #e5e7eb; color: #4b5563; }
+  .badge.hard { background: var(--bad-bg); color: var(--bad); }
+  .badge.legacy { background: #f3f4f6; color: #374151; border: 1px dashed #9ca3af; }
+  .dots { display: inline-flex; gap: 2px; margin-top: 3px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot.hard { border-radius: 1px; }
+  .dot.pass { background: var(--ok); } .dot.fail { background: var(--bad); }
+  .bvd .win { color: var(--ok); font-weight: 600; }
+  .bvd .lose { color: var(--warn); font-weight: 600; }
+
+  /* ---------- Detail view ---------- */
+  #detail { margin-top: 14px; }
+  #detail h4 { margin: 14px 0 6px; font-size: 13px; }
+  .detail-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .detail-head .title { font-size: 15px; font-weight: 700; }
+  .summary-line { font-size: 12px; margin: 6px 0 2px; padding: 6px 8px; border-radius: 6px; background: var(--bg-soft); }
+  .stack { display: flex; height: 12px; border-radius: 4px; overflow: hidden; margin: 6px 0 4px; background: var(--line); }
+  .stack span { display: block; height: 100%; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); }
+  .legend-row i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  table.items { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.items td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.items td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  table.items tr.sub td { color: var(--muted); font-size: 11.5px; }
+  table.items tr.sub td:first-child { padding-left: 20px; }
+  table.items tr.total td { font-weight: 700; border-top: 2px solid var(--ink); border-bottom: none; }
+  .xing { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; }
+  .xing .top { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+  .xing .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .opt { border-radius: 5px; padding: 6px 8px; background: var(--bg-soft); }
+  .opt.cheaper { background: var(--ok-bg); outline: 1px solid #86efac; }
+  .opt .lbl { font-size: 10.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; letter-spacing: .03em; }
+  .opt .amt { font-size: 14px; font-weight: 700; margin: 1px 0; }
+  .opt .bar { height: 5px; border-radius: 3px; background: #94a3b8; margin-top: 4px; }
+  .opt.cheaper .bar { background: var(--ok); }
+  .xing .note { margin-top: 6px; color: #374151; }
+  ul.check { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+  ul.check li { display: grid; grid-template-columns: 18px 42px 1fr auto; gap: 6px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--line); }
+  ul.check .ok { color: var(--ok); font-weight: 700; } ul.check .no { color: var(--bad); font-weight: 700; }
+  ul.check .kind { font-size: 10px; font-weight: 700; border-radius: 3px; padding: 0 4px; text-align: center; }
+  ul.check .kind.hard { background: var(--bad-bg); color: var(--bad); } ul.check .kind.soft { background: #e0e7ff; color: #3730a3; }
+  ul.check .val { color: var(--muted); white-space: nowrap; text-align: right; }
+  details.assump { margin-top: 16px; font-size: 12px; }
+  details.assump summary { cursor: pointer; font-weight: 600; }
+  details.assump pre { white-space: pre-wrap; font-size: 11px; background: var(--bg-soft); padding: 8px; border-radius: 6px; max-height: 260px; overflow: auto; }
+
+  /* ---------- Map legend ---------- */
+  .route-legend { background: white; padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.25); font-size: 12px; line-height: 1.5; }
+  .route-legend .row { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .route-legend .row:hover { text-decoration: underline; }
+  .route-legend .hdr { font-weight: 700; margin-bottom: 2px; }
+  .religious-icon { background: #7e22ce; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 0 1px #7e22ce; }
+
+  @media (max-width: 1100px) {
+    #results { top: auto; left: 12px; right: 12px; width: auto; height: 46vh; }
+  }
+  @media (max-width: 600px) {
+    #panel { left: 12px; right: 12px; width: auto; top: 70px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="panel">
+  <h2>TerraRoute</h2>
+  <p>Click the map to set <b>start</b>, then click again to set <b>end</b>.</p>
+  <p id="coords">Start: — <br/>End: —</p>
+  <label><input type="checkbox" id="showReligious" checked /> Show religious sites (blocked)</label>
+  <label><input type="checkbox" id="includeLegacy" /> Also show legacy v2-grid route</label>
+  <button id="resetBtn">Reset Points</button>
+  <div id="status"></div>
+</div>
+
+<div id="map"></div>
+
+<div id="results" hidden>
+  <div class="res-head">
+    <div>
+      <h3 id="resTitle">Route comparison</h3>
+      <div class="sub" id="resSub"></div>
+    </div>
+    <button class="icon-btn" id="closeResults" title="Hide panel">×</button>
+  </div>
+  <div class="res-body">
+    <table class="cmp">
+      <colgroup>
+        <col style="width:15%" /><col style="width:12%" /><col style="width:24%" /><col style="width:11%" />
+        <col style="width:9%" /><col style="width:10%" /><col style="width:19%" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Route</th><th class="num">Total</th><th>Bridge vs detour</th>
+          <th class="num">Land acq.</th><th class="num">Forest</th><th class="num">Earthwork</th><th>Checklist</th>
+        </tr>
+      </thead>
+      <tbody id="cmpBody"></tbody>
+    </table>
+    <div class="small" style="margin-top:6px">Click a row or a line on the map for the itemized breakdown. Solid lines = top 3, dashed = rejected candidates.</div>
+    <div id="detail"></div>
+    <details class="assump"><summary>Cost &amp; constraint assumptions used</summary><pre id="assumptions">Loading…</pre></details>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+  const REGION_CENTER = [22.22, 84.84]; // center of our supported bounding box
+  const map = L.map("map").setView(REGION_CENTER, 12);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+    maxZoom: 18,
+  }).addTo(map);
+
+  // Highlight the supported test region (fetched from /api/bounds so it always matches the backend)
+  fetch("/api/bounds")
+    .then((res) => res.json())
+    .then((bounds) => {
+      const rectBounds = [
+        [bounds.minLat, bounds.minLon],
+        [bounds.maxLat, bounds.maxLon],
+      ];
+      L.rectangle(rectBounds, {
+        color: "#3b82f6",
+        weight: 2,
+        fillColor: "#93c5fd",
+        fillOpacity: 0.15,
+        interactive: false, // let clicks pass through to the map underneath instead of being captured by the rectangle
+      }).addTo(map);
+    })
+    .catch((err) => console.error("Failed to load bounds:", err));
+
+  // ---------- Religious sites overlay ----------
+  const religiousLayer = L.layerGroup().addTo(map);
+  fetch("/api/religious-sites").then((r) => r.json()).then((sites) => {
+    for (const s of sites) {
+      L.marker([s.lat, s.lon], {
+        icon: L.divIcon({ className: "religious-icon", iconSize: [10, 10] }),
+        interactive: true,
+      }).bindTooltip(`${s.name || "Unnamed " + s.kind.replace(/_/g, " ")}<br/><span style="color:#6b7280">${s.kind.replace(/_/g, " ")}${s.religion ? " · " + s.religion : ""} — blocked + 20 m buffer</span>`)
+        .addTo(religiousLayer);
+    }
+  });
+  document.getElementById("showReligious").addEventListener("change", (e) => {
+    if (e.target.checked) religiousLayer.addTo(map); else map.removeLayer(religiousLayer);
+  });
+
+  fetch("/api/assumptions").then((r) => r.json()).then((a) => {
+    document.getElementById("assumptions").textContent = JSON.stringify(a, null, 2);
+  });
+
+  // ---------- State ----------
+  const ROUTE_COLORS = { A: "#e11d48", B: "#d97706", C: "#059669", D: "#7c3aed", E: "#0891b2", L: "#4b5563" };
+  let startPoint = null, endPoint = null;
+  let startMarker = null, endMarker = null;
+  let routeLayers = {};                        // id -> { line, casing }
+  const detailLayer = L.layerGroup().addTo(map); // bridges + detours of the selected route
+  let legendControl = null;
+  let lastResult = null, selectedId = null;
+
+  const coordsEl = document.getElementById("coords");
+  const statusEl = document.getElementById("status");
+  const resultsEl = document.getElementById("results");
+
+  function fmt(latlng) {
+    return latlng ? `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}` : "—";
+  }
+  function updateCoordsDisplay() {
+    coordsEl.innerHTML = `Start: ${fmt(startPoint)} <br/>End: ${fmt(endPoint)}`;
+  }
+
+  // Indian-style money formatting: ₹ Cr / ₹ L
+  function inr(v) {
+    if (v === null || v === undefined || !isFinite(v)) return "—";
+    if (Math.abs(v) >= 1e7) return `₹${(v / 1e7).toFixed(2)} Cr`;
+    if (Math.abs(v) >= 1e5) return `₹${(v / 1e5).toFixed(1)} L`;
+    return `₹${Math.round(v).toLocaleString("en-IN")}`;
+  }
+  const n0 = (v) => Math.round(v).toLocaleString("en-IN");
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function clearRoutes() {
+    for (const { line, casing } of Object.values(routeLayers)) { map.removeLayer(line); if (casing) map.removeLayer(casing); }
+    routeLayers = {};
+    detailLayer.clearLayers();
+    if (legendControl) { map.removeControl(legendControl); legendControl = null; }
+    lastResult = null; selectedId = null;
+  }
+
+  function resetAll() {
+    startPoint = null; endPoint = null;
+    if (startMarker) map.removeLayer(startMarker);
+    if (endMarker) map.removeLayer(endMarker);
+    startMarker = endMarker = null;
+    clearRoutes();
+    resultsEl.hidden = true;
+    statusEl.textContent = "";
+    updateCoordsDisplay();
+  }
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("closeResults").addEventListener("click", () => (resultsEl.hidden = true));
+  document.getElementById("includeLegacy").addEventListener("change", () => { if (startPoint && endPoint) fetchRoutes(); });
+
+  // ---------- Route drawing ----------
+  function lineStyle(r, highlighted) {
+    const color = ROUTE_COLORS[r.id] || "#111";
+    if (r.legacy) return { color, weight: highlighted ? 5 : 3, opacity: 0.9, dashArray: "2 7", lineCap: "round" };
+    if (r.ranking.selected) return { color, weight: highlighted ? 8 : 5, opacity: 1 };
+    return { color, weight: highlighted ? 5 : 3, opacity: highlighted ? 1 : 0.75, dashArray: "9 8" };
+  }
+
+  function drawRoutes(data) {
+    clearRoutes();
+    lastResult = data;
+    // Draw rejected first, then top 3 in reverse rank so rank #1 ends up on top
+    const order = [...data.routes].sort((a, b) => b.ranking.rank - a.ranking.rank);
+    for (const r of order) {
+      const latlngs = r.geometry.coordinates.map(([lon, lat]) => [lat, lon]);
+      const casing = r.ranking.selected && !r.legacy ? L.polyline(latlngs, { color: "white", weight: 9, opacity: 0.9, interactive: false }).addTo(map) : null;
+      const line = L.polyline(latlngs, lineStyle(r, false)).addTo(map);
+      line.bindTooltip(`<b>${esc(r.name)}</b> · ${r.ranking.selected ? "Top 3 #" + r.ranking.rank : "rank " + r.ranking.rank}<br/>${r.summary.distanceKm} km · ${inr(r.summary.totalInr)}<br/>${esc(r.constraints.summary)}`, { sticky: true });
+      line.on("click", (e) => { L.DomEvent.stopPropagation(e); selectRoute(r.id); });
+      line.on("mouseover", () => highlight(r.id, true));
+      line.on("mouseout", () => highlight(r.id, false));
+      routeLayers[r.id] = { line, casing };
+    }
+    const all = L.featureGroup(Object.values(routeLayers).map((l) => l.line));
+    map.fitBounds(all.getBounds(), { padding: [40, 40], paddingBottomRight: window.innerWidth > 1100 ? [720, 40] : [40, window.innerHeight * 0.47] });
+    addLegend(data);
+  }
+
+  function highlight(id, on) {
+    const r = lastResult?.routes.find((x) => x.id === id);
+    if (!r || !routeLayers[id]) return;
+    routeLayers[id].line.setStyle(lineStyle(r, on || id === selectedId));
+    if (on) routeLayers[id].line.bringToFront();
+    document.querySelectorAll(`tr.route-row[data-id="${id}"]`).forEach((tr) => tr.classList.toggle("hover", on));
+  }
+
+  function badgeFor(r) {
+    if (r.legacy && r.ranking.hardViolations) return `<span class="badge hard">legacy · hard ✗</span>`;
+    if (r.legacy) return `<span class="badge legacy">legacy</span>`;
+    if (r.ranking.hardViolations) return `<span class="badge hard">hard ✗</span>`;
+    if (r.ranking.selected) return `<span class="badge top">TOP 3 · #${r.ranking.rank}</span>`;
+    return `<span class="badge rej">rejected · #${r.ranking.rank}</span>`;
+  }
+  function swatch(r) {
+    const cls = r.legacy ? "dotted" : r.ranking.selected ? "" : "dashed";
+    return `<span class="swatch ${cls}" style="border-top-color:${ROUTE_COLORS[r.id]}"></span>`;
+  }
+
+  function addLegend(data) {
+    legendControl = L.control({ position: "bottomleft" });
+    legendControl.onAdd = () => {
+      const div = L.DomUtil.create("div", "route-legend");
+      const rows = [...data.routes].sort((a, b) => a.ranking.rank - b.ranking.rank).map((r) =>
+        `<div class="row" data-id="${r.id}">${swatch(r)} <b>${esc(r.name)}</b> ${badgeFor(r)} <span style="color:#6b7280">${inr(r.summary.totalInr)}</span></div>`).join("");
+      div.innerHTML = `<div class="hdr">Candidate routes</div>${rows}
+        <div style="margin-top:4px;color:#6b7280;font-size:11px">━ top 3 &nbsp; ┅ rejected &nbsp; <span style="color:#7e22ce">●</span> religious site</div>`;
+      L.DomEvent.disableClickPropagation(div);
+      div.querySelectorAll(".row").forEach((el) => {
+        el.addEventListener("click", () => selectRoute(el.dataset.id));
+        el.addEventListener("mouseenter", () => highlight(el.dataset.id, true));
+        el.addEventListener("mouseleave", () => highlight(el.dataset.id, false));
+      });
+      return div;
+    };
+    legendControl.addTo(map);
+  }
+
+  // ---------- Comparison table ----------
+  function bridgeCell(r) {
+    const xs = r.cost.bridges.crossings;
+    if (!xs.length) return `<span class="small">No water crossing</span>`;
+    const compared = xs.filter((x) => x.comparison && x.comparison.detourFeasible !== null && x.comparison.detourFeasible !== undefined);
+    const bridgeWins = compared.filter((x) => x.comparison.cheaper === "bridge").length;
+    const main = [...xs].sort((a, b) => b.bridgeLengthM - a.bridgeLengthM)[0];
+    const mc = main.comparison || {};
+    const det = mc.detourFeasible ? inr(mc.detourOptionInr) : "not feasible";
+    return `<div class="bvd"><b>${inr(r.cost.bridges.inr)}</b> · ${xs.length} crossing${xs.length > 1 ? "s" : ""}</div>
+      <div class="small bvd">Largest: ${esc(main.name || main.waterbody)} ${Math.round(main.bridgeLengthM)} m —
+      bridge <span class="${mc.cheaper === "bridge" ? "win" : ""}">${inr(mc.bridgeOptionInr)}</span> vs detour <span class="${mc.cheaper === "detour" ? "win" : ""}">${det}</span></div>
+      <div class="small">Bridge cheaper at ${bridgeWins}/${compared.length}</div>`;
+  }
+
+  function checklistCell(r) {
+    const c = r.constraints;
+    const dots = c.items.map((i) => `<span class="dot ${i.type} ${i.passed ? "pass" : "fail"}" title="${i.id} ${esc(i.name)}: ${i.passed ? "pass" : "FAIL"} (${esc(i.value)})"></span>`).join("");
+    const failed = c.items.filter((i) => !i.passed).map((i) => i.failText);
+    return `<b>${c.passed}/${c.total}</b> <span class="small">(hard ${c.hardPassed}/${c.hardTotal})</span><br/><span class="dots">${dots}</span>
+      ${failed.length ? `<div class="small" style="margin-top:2px">✗ ${esc(failed.slice(0, 2).join("; "))}${failed.length > 2 ? "…" : ""}</div>` : ""}`;
+  }
+
+  function renderTable(data) {
+    const rows = [...data.routes].sort((a, b) => a.ranking.rank - b.ranking.rank).map((r) => {
+      const k = r.cost;
+      return `<tr class="route-row ${r.ranking.selected ? "" : "rejected"}" data-id="${r.id}">
+        <td><div class="rname">${swatch(r)} ${esc(r.name)}</div><div style="margin-top:3px">${badgeFor(r)}</div><div class="small" style="margin-top:3px">${r.summary.distanceKm.toFixed(2)} km</div></td>
+        <td class="num"><b>${inr(k.totalInr)}</b></td>
+        <td>${bridgeCell(r)}</td>
+        <td class="num">${inr(k.landAcquisition.inr)}<div class="small">${k.landAcquisition.hectares.toFixed(1)} ha${k.landAcquisition.structures.count ? ` · ${k.landAcquisition.structures.count} bldg` : ""}</div></td>
+        <td class="num">${inr(k.forest.inr)}<div class="small">${k.forest.sharePct.toFixed(1)}%</div></td>
+        <td class="num">${inr(k.earthwork.inr)}<div class="small">${n0(k.earthwork.cutM3 + k.earthwork.fillM3)} m³</div></td>
+        <td>${checklistCell(r)}</td>
+      </tr>`;
+    }).join("");
+    const body = document.getElementById("cmpBody");
+    body.innerHTML = rows;
+    body.querySelectorAll("tr.route-row").forEach((tr) => {
+      tr.addEventListener("click", () => selectRoute(tr.dataset.id));
+      tr.addEventListener("mouseenter", () => highlight(tr.dataset.id, true));
+      tr.addEventListener("mouseleave", () => highlight(tr.dataset.id, false));
+    });
+    const nCand = data.routes.filter((r) => !r.legacy).length;
+    document.getElementById("resTitle").textContent = `${nCand} candidate routes — top 3: ${data.top.map((id) => "Route " + id).join(", ")}`;
+    document.getElementById("resSub").textContent =
+      `Straight line ${data.request.straightLineKm} km · ${data.method.generation.iterations} penalty iterations · ranked by hard violations, then ₹ × (1 + 0.1 × soft violations) · computed in ${data.timingMs.generation + data.timingMs.analysis} ms`;
+  }
+
+  // ---------- Detail view for one route ----------
+  const PART_COLORS = { pavement: "#64748b", earthwork: "#a16207", land: "#2563eb", bridges: "#0891b2", forest: "#15803d" };
+
+  function renderDetail(r) {
+    const k = r.cost, total = k.totalInr;
+    const parts = [
+      ["pavement", "Pavement", k.pavement.inr], ["earthwork", "Earthwork", k.earthwork.inr],
+      ["land", "Land acquisition", k.landAcquisition.inr], ["bridges", "Bridges", k.bridges.inr], ["forest", "Forest", k.forest.inr],
+    ];
+    const stack = parts.map(([key, , v]) => `<span style="width:${(100 * v) / total}%;background:${PART_COLORS[key]}" title="${key}: ${inr(v)}"></span>`).join("");
+    const legend = parts.map(([key, label, v]) => `<span><i style="background:${PART_COLORS[key]}"></i>${label} ${((100 * v) / total).toFixed(0)}%</span>`).join("");
+
+    const landRows = k.landAcquisition.byType.map((t) =>
+      `<tr class="sub"><td>${esc(t.type.replace(/_/g, " "))}: ${t.hectares.toFixed(2)} ha × ${inr(t.ratePerHaInr)}/ha</td><td class="num">${inr(t.inr)}</td></tr>`).join("");
+    const s = k.landAcquisition.structures;
+
+    const maxOpt = Math.max(1, ...k.bridges.crossings.map((x) => Math.max(x.comparison?.bridgeOptionInr || 0, x.comparison?.detourOptionInr || 0)));
+    const crossings = k.bridges.crossings.map((x) => {
+      const c = x.comparison || {};
+      const bw = ((100 * (c.bridgeOptionInr || 0)) / maxOpt).toFixed(1), dw = ((100 * (c.detourOptionInr || 0)) / maxOpt).toFixed(1);
+      return `<div class="xing" data-xid="${x.id}">
+        <div class="top"><span>${x.id} · ${esc(x.name || x.waterbody)} — ${x.bridge.type}</span><span>${Math.round(x.waterLengthM)} m water → ${Math.round(x.bridgeLengthM)} m bridge</span></div>
+        <div class="small">Width from ${esc(x.widthSource)}${x.skewDeg !== null ? ` · skew ${Math.round(x.skewDeg)}°` : ""}${x.existingBridgeNearby ? ` · existing bridge nearby: ${esc(x.existingBridgeNearby)}` : ""}</div>
+        <div class="opts">
+          <div class="opt ${c.cheaper === "bridge" ? "cheaper" : ""}">
+            <div class="lbl">Bridge (route as drawn)</div>
+            <div class="amt">${inr(c.bridgeOptionInr)}</div>
+            <div class="small">${esc(x.bridge.structure)}: ${n0(x.bridge.deckAreaM2)} m² × ${inr(x.bridge.ratePerM2)}/m² = ${inr(x.bridge.inr)}<br/>+ ${esc(c.bridgeOptionDetail || "")}</div>
+            <div class="bar" style="width:${bw}%"></div>
+          </div>
+          <div class="opt ${c.cheaper === "detour" ? "cheaper" : ""}">
+            <div class="lbl">Land-only detour</div>
+            ${c.detourFeasible
+              ? `<div class="amt">${inr(c.detourOptionInr)}</div><div class="small">${esc(c.detourOptionDetail)} (${c.extraKm >= 0 ? "+" : ""}${c.extraKm.toFixed(2)} km vs direct)</div><div class="bar" style="width:${dw}%"></div>`
+              : `<div class="amt">not feasible</div><div class="small">no land path around this water within the search area</div>`}
+          </div>
+        </div>
+        <div class="note">${c.cheaper === "bridge" ? "✓" : c.cheaper === "detour" ? "⚠" : "•"} ${esc(c.note || "")}
+          ${c.gridCostDirect !== undefined ? `<span class="small"> Grid cost: direct ${n0(c.gridCostDirect)}${c.gridCostDetour ? ` vs detour ${n0(c.gridCostDetour)}` : ""}.</span>` : ""}</div>
+      </div>`;
+    }).join("") || `<div class="small">This route does not cross any water.</div>`;
+
+    const checks = r.constraints.items.map((i) => `<li>
+        <span class="${i.passed ? "ok" : "no"}">${i.passed ? "✓" : "✗"}</span>
+        <span class="kind ${i.type}">${i.type.toUpperCase()}</span>
+        <span>${i.id} · ${esc(i.name)}</span>
+        <span class="val">${esc(i.value)} <span style="opacity:.7">(${esc(i.limit)})</span></span>
+      </li>`).join("");
+
+    const rel = r.religiousNearby.length
+      ? `Nearest religious site: ${esc(r.religiousNearby[0].name || r.religiousNearby[0].kind)} at ${r.religiousNearby[0].distanceM} m.`
+      : "No religious site within 500 m.";
+
+    document.getElementById("detail").innerHTML = `
+      <div class="detail-head">${swatch(r)} <span class="title">${esc(r.name)}</span> ${badgeFor(r)}
+        <span class="small">${r.summary.distanceKm} km · grid cost ${n0(r.summary.gridCost)}${r.legacy ? " (v2 grid)" : ` · penalty iteration ${r.generation.iteration}, max overlap ${r.generation.maxOverlapWithEarlierPct}%`}</span></div>
+      <div class="summary-line"><b>Checklist:</b> ${esc(r.constraints.summary)}. ${rel}</div>
+      <h4>Itemized estimate — ${inr(total)}</h4>
+      <div class="stack">${stack}</div><div class="legend-row">${legend}</div>
+      <table class="items" style="margin-top:8px">
+        <tr><td>Pavement — ${k.pavement.lengthKm.toFixed(2)} km (excl. bridges) × ${inr(k.pavement.ratePerKmInr)}/km</td><td class="num">${inr(k.pavement.inr)}</td></tr>
+        <tr><td>Earthwork — cut ${n0(k.earthwork.cutM3)} m³, fill ${n0(k.earthwork.fillM3)} m³ (max cut ${k.earthwork.maxCutM.toFixed(1)} m, fill ${k.earthwork.maxFillM.toFixed(1)} m; design grade ≤ ${k.earthwork.designMaxGradePct}%)</td><td class="num">${inr(k.earthwork.inr)}</td></tr>
+        <tr><td>Land acquisition — ${k.landAcquisition.hectares.toFixed(2)} ha in ${k.landAcquisition.rowWidthM} m ROW (RFCTLARR: market × factor + 100% solatium)</td><td class="num">${inr(k.landAcquisition.inr)}</td></tr>
+        ${landRows}
+        ${s.count ? `<tr class="sub"><td>structures inside ROW: ${s.count} × ${inr(s.ratePerBuildingInr)}</td><td class="num">${inr(s.inr)}</td></tr>` : ""}
+        <tr><td>Bridges — ${k.bridges.count} structure${k.bridges.count === 1 ? "" : "s"}, ${n0(k.bridges.totalLengthM)} m total</td><td class="num">${inr(k.bridges.inr)}</td></tr>
+        <tr><td>Forest impact — ${k.forest.hectares.toFixed(2)} ha × (NPV ${inr(k.forest.npvPerHaInr)} + CA ${inr(k.forest.caPerHaInr)})/ha</td><td class="num">${inr(k.forest.inr)}</td></tr>
+        <tr class="total"><td>Total estimated project cost</td><td class="num">${inr(total)}</td></tr>
+      </table>
+      <h4>Bridge vs detour at each water crossing</h4>
+      ${crossings}
+      <h4>Field-engineer checklist — ${r.constraints.passed}/${r.constraints.total}</h4>
+      <ul class="check">${checks}</ul>`;
+  }
+
+  function showCrossingsOnMap(r) {
+    detailLayer.clearLayers();
+    for (const x of r.cost.bridges.crossings) {
+      const c = x.comparison || {};
+      if (c.detourGeometry) {
+        L.polyline(c.detourGeometry.map(([lon, lat]) => [lat, lon]), { color: "#334155", weight: 2, dashArray: "3 5", opacity: 0.8, interactive: false }).addTo(detailLayer);
+      }
+      L.circleMarker([x.location[1], x.location[0]], {
+        radius: 6, color: "#0f172a", weight: 2, fillColor: c.cheaper === "detour" ? "#f59e0b" : "#22d3ee", fillOpacity: 1,
+      }).bindTooltip(`<b>${x.id} · ${esc(x.name || x.waterbody)}</b><br/>${x.bridge.type}, ${Math.round(x.bridgeLengthM)} m<br/>Bridge ${inr(c.bridgeOptionInr)} vs detour ${c.detourFeasible ? inr(c.detourOptionInr) : "not feasible"}`)
+        .addTo(detailLayer);
+    }
+  }
+
+  function selectRoute(id) {
+    if (!lastResult) return;
+    const prev = selectedId;
+    selectedId = id;
+    if (prev) highlight(prev, false);
+    highlight(id, true);
+    const r = lastResult.routes.find((x) => x.id === id);
+    document.querySelectorAll("tr.route-row").forEach((tr) => tr.classList.toggle("selected", tr.dataset.id === id));
+    renderDetail(r);
+    showCrossingsOnMap(r);
+    resultsEl.hidden = false;
+    document.getElementById("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ---------- API ----------
+  async function fetchRoutes() {
+    statusEl.textContent = "Generating candidate routes and cost estimates...";
+    try {
+      const legacy = document.getElementById("includeLegacy").checked ? "&legacy=1" : "";
+      const url = `/api/routes?startLat=${startPoint.lat}&startLon=${startPoint.lng}&endLat=${endPoint.lat}&endLon=${endPoint.lng}${legacy}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!res.ok) {
+        statusEl.textContent = `Error: ${data.error}`;
+        return;
+      }
+
+      drawRoutes(data);
+      renderTable(data);
+      resultsEl.hidden = false;
+      selectRoute(data.top[0]);
+
+      const best = data.routes.find((r) => r.id === data.top[0]);
+      const snapped = [data.request.snappedStart, data.request.snappedEnd].some((p) => p.snappedM > 0)
+        ? `<br/><span style="color:#b45309">A point was inside a blocked area and was moved to the nearest passable cell.</span>` : "";
+      statusEl.innerHTML = `${data.routes.filter((r) => !r.legacy).length} candidates · best: <b>${best.name}</b><br/>${best.summary.distanceKm} km · ${inr(best.summary.totalInr)}${snapped}`;
+    } catch (err) {
+      statusEl.textContent = "Request failed — is the server running?";
+      console.error(err);
+    }
+  }
+
+  map.on("click", (e) => {
+    if (!startPoint) {
+      startPoint = e.latlng;
+      startMarker = L.marker(startPoint, { title: "Start" }).addTo(map).bindPopup("Start").openPopup();
+    } else if (!endPoint) {
+      endPoint = e.latlng;
+      endMarker = L.marker(endPoint, { title: "End" }).addTo(map).bindPopup("End").openPopup();
+      fetchRoutes();
+    } else {
+      // third click starts over
+      resetAll();
+      startPoint = e.latlng;
+      startMarker = L.marker(startPoint, { title: "Start" }).addTo(map).bindPopup("Start").openPopup();
+    }
+    updateCoordsDisplay();
+  });
+</script>
+
+</body>
+</html>

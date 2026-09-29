@@ -1,0 +1,24 @@
+{
+  "name": "terraroute",
+  "version": "1.0.0",
+  "description": "Least-cost highway corridor planner for the Rourkela study area: A* on a calibrated terrain cost grid, itemised INR estimates and an IRC-based siting checklist.",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "node scripts/test_routes.js",
+    "start": "node src/server.js",
+    "build:data": "node scripts/fetch_osm.js && node scripts/fetch_dem.js && node scripts/build_layers.js",
+    "build:layers": "node scripts/build_layers.js",
+    "test:e2e": "node scripts/test_routes.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@turf/turf": "^7.4.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "fast-xml-parser": "^5.11.0",
+    "pngjs": "^7.0.0"
+  }
+}
